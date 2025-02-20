@@ -1,0 +1,10 @@
+rdkit
+joblib
+decimer
+plotly
+openai
+scikit-learn
+dash
+flask
+admet-ai
+torch==2.5.1

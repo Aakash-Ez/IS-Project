@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload</title>
+</head>
+<body>
+    <h2>Upload an Image</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="uploadImage()">Submit</button>
+    <p id="responseText"></p>
+
+    <script>
+        function uploadImage() {
+            const input = document.getElementById('imageInput');
+            if (!input.files.length) {
+                alert("Please select an image file.");
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append("image", input.files[0]);
+            
+            fetch("/get-smile", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("responseText").innerText = data;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Failed to upload image.");
+            });
+        }
+    </script>
+</body>
+</html>

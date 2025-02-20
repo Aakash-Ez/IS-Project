@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molecular Structure Analysis</title>
+    <script src="https://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f4f4f4;
+        }
+        .main-container {
+            display: flex;
+            width: 100%;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .left-container {
+            flex: 1;
+            padding: 20px;
+        }
+        .right-container {
+            flex: 1;
+            padding: 20px;
+            border-left: 2px solid #ddd;
+        }
+        form {
+            background: #6CC551;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        form input, form button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        form button {
+            background-color: #447604;
+            color: white;
+            cursor: pointer;
+        }
+        .chat-box {
+            height: 700px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .chat-input {
+            display: flex;
+            margin-top: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .chat-input button {
+            padding: 8px 12px;
+            background: #6CC551;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .viewer-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        #viewer {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="left-container">
+            <h2>Molecular Structure Analysis</h2>
+            <form action="/molecule" method="post">
+                <label for="smiles" style="color: white;">Enter SMILES String:</label>
+                <input type="text" id="smiles" name="smiles" value="{{ smiles }}" required>
+                <button type="submit">Generate Structure</button>
+            </form>
+            {% if image_path %}
+                <div class="result-container">
+                    <h3>3D Molecular Visualization</h3>
+                    <div class="viewer-container">
+                        <div style="position: relative" id="viewer"></div>
+                    </div>
+                    <script>
+                        let viewer = $3Dmol.createViewer("viewer", {backgroundColor: "white"});
+                        let molBlock = `{{ mol_block|safe }}`;
+                        viewer.addModel(molBlock, "mol");
+                        viewer.setStyle({}, {stick: {}});
+                        viewer.zoomTo();
+                        viewer.render();
+                    </script>
+                    <h3>Molecular Properties</h3>
+                    <table>
+                        <tr>
+                            <th>Property</th>
+                            <th>Value</th>
+                        </tr>
+                        <tr>
+                            <td>Molecular Weight</td>
+                            <td>{{ molecular_weight }}</td>
+                        </tr>
+                        <tr>
+                            <td>LogP (Octanol-Water Partition Coefficient)</td>
+                            <td>{{ logp }}</td>
+                        </tr>
+                        <tr>
+                            <td>Number of Hydrogen Donors</td>
+                            <td>{{ num_h_donors }}</td>
+                        </tr>
+                        <tr>
+                            <td>Number of Hydrogen Acceptors</td>
+                            <td>{{ num_h_acceptors }}</td>
+                        </tr>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+        <div class="right-container">
+            <h2>Chat</h2>
+            <div class="chat-box" id="chat-box"></div>
+            <div class="chat-input">
+                <input type="text" id="chat-input" placeholder="Ask about {{ smiles }}...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function sendMessage() {
+            let input = document.getElementById("chat-input").value;
+            if (!input) return;
+            let chatBox = document.getElementById("chat-box");
+            chatBox.innerHTML += `<div><strong>You:</strong> ${input}</div>`;
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ smiles: document.getElementById("smiles").value })
+            })
+            .then(response => response.json())
+            .then(data => {
+                chatBox.innerHTML += `<div><strong>Bot:</strong> ${data.response}</div>`;
+                document.getElementById("chat-input").value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
