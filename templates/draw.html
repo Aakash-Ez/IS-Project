@@ -45,17 +45,40 @@
             font-size: 18px;
             color: #333;
         }
+        #imagePreview {
+            margin-top: 20px;
+            max-width: 100%;
+            height: auto;
+            display: none;
+            border-radius: 8px;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 <body>
     <div class="main-container">
         <h2>Upload an Image</h2>
-        <input type="file" id="imageInput" accept="image/*">
+        <input type="file" id="imageInput" accept="image/*" onchange="previewImage()">
         <button onclick="uploadImage()">Submit</button>
         <p id="responseText"></p>
+        <img id="imagePreview" alt="Uploaded Image Preview">
     </div>
 
     <script>
+        function previewImage() {
+            const input = document.getElementById('imageInput');
+            const preview = document.getElementById('imagePreview');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
         function uploadImage() {
             const input = document.getElementById('imageInput');
             if (!input.files.length) {
